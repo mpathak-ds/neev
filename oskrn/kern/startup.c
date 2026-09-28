@@ -48,7 +48,7 @@ neev_init (
 	early_puts("\nDriftless Neev Kernel Version 1.0.0.001\n");
 
 	early_puts("init: Initializing peripherals\n");	
-	status = clock_init(115200, 10000000);
+	status = clock_init(115200, 1);
 
 	if (status) {
 

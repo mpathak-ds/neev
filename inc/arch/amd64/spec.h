@@ -8,6 +8,16 @@
 #define IA32_APIC_BASE_MSR_BSP 0x100
 #define IA32_APIC_BASE_MSR_ENABLE 0x800
 
+#define LAPIC_EOI 0x0B0
+#define LAPIC_SVR 0x0F0
+#define LAPIC_LVT_TMR 0x320
+#define LAPIC_TMR_INIT 0x380
+#define LAPIC_TMR_CUR 0x390
+#define LAPIC_TMR_DIV 0x3E0
+
+#define VEC_TIMER    0x20
+#define VEC_SPURIOUS 0xFF
+
 typedef struct
 {
 	uint16_t lim;
@@ -65,5 +75,7 @@ void amd64_init_gdt(void);
 void amd64_init_idt(void);
 
 int amd64_init_intctlr(void);
+void amd64_init_timer_lapic(uint32_t hertz);
+void amd64_eoi_lapic(void);
 
 #endif

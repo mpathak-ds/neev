@@ -20,6 +20,8 @@
 extern amd64_ehandler
 global isr_stub_table
 global amd64_load_gdt
+global isr_stub_32
+global isr_stub_255
 
 ;dont question why i put this here
 amd64_load_gdt:
@@ -122,6 +124,10 @@ isr_stub 28, 0
 isr_stub 29, 1
 isr_stub 30, 1
 isr_stub 31, 0
+
+;extras
+isr_stub 32, 0
+isr_stub 255, 0
 
 section .data
 isr_stub_table:

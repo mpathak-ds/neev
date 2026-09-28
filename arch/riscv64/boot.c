@@ -175,11 +175,13 @@ clock_init (
 {
 	(void)ser_baud;
 
-	g_timer_rate = timer_rate;
+	uint32_t timer_hz = timer_rate * 10000000;
+
+	g_timer_rate = timer_hz;
 
 	w_stvec((uint64_t)trap_entry);
 
-	sbi_set_timer(r_time() + timer_rate);
+	sbi_set_timer(r_time() + timer_hz);
 
 	w_sie(SIE_STIE);
 	w_sstatus(r_sstatus() | SSTATUS_SIE);

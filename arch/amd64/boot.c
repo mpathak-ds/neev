@@ -107,6 +107,9 @@ clock_init (
 		return STATUS_FAILED_DEVICE_INIT;
 	}
 
+	early_puts("boot: setting timer\n");
+	amd64_init_timer_lapic(timer_rate);
+
 	return 0;
 }
 

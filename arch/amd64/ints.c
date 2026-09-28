@@ -30,9 +30,27 @@ static bool vecs[256];
 
 extern void *isr_stub_table[];
 
+extern void isr_stub_32(void);
+extern void isr_stub_255(void);
+
+volatile uint64_t g_ticks;
+
 //generic handler
 void amd64_ehandler(struct int_frame *f)
 {
+	//
+	// Timer handler
+	//
+	
+	if (f->vec == 0x20) {
+		g_ticks++;
+		
+		early_puts(".");
+		
+		amd64_eoi_lapic();
+		return;
+	}
+
 	early_puts("boot: exception triggered!\n");
 
 	//
@@ -51,6 +69,11 @@ void amd64_ehandler(struct int_frame *f)
 	early_puts(" cs=");
 	early_puthex(f->cs);
 	early_puts("\n");
+
+	if (f->vec == 0xFF) {
+		//spurious
+		return;
+	}
 
 	if (f->vec == 14) {
 
@@ -95,11 +118,24 @@ void amd64_init_idt(void)
 		vecs[vec] = true;
 	}
 
+	amd64_set_desc(0x20, isr_stub_32,  0x8E);
+	amd64_set_desc(0xFF, isr_stub_255, 0x8E);
+
 	asm volatile ("lidt %0" : : "m"(g_idtr));
 
 	//
 	// Disable and remap before enabling ints
 	//
+
+	outb(0x20, 0x21);
+	outb(0xA0, 0x11);
+
+	outb(0x21, 0x20);
+	outb(0xA1, 0x28);
+	outb(0x21, 0x04);
+	outb(0xA1, 0x02);
+	outb(0x21, 0x01);
+	outb(0xA1, 0x01);
 
 	outb(0x21, 0xFF);
 	outb(0xA1, 0xFF);

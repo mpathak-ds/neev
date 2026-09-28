@@ -23,6 +23,8 @@
 #include <amd64/spec.h>
 #include <adefs.h>
 
+static uint32_t g_lapic_ticks_per_ms;
+
 static inline uint64_t amd64_read_x2apic(uint32_t reg)
 {
 	return rdmsr(0x800 + (reg>>4));
@@ -31,6 +33,23 @@ static inline uint64_t amd64_read_x2apic(uint32_t reg)
 static inline void amd64_write_x2apic(uint32_t reg, uint64_t val)
 {
 	wrmsr(0x800 + (reg>>4), val);
+}
+
+void amd64_eoi_lapic(void)
+{
+	amd64_write_x2apic(LAPIC_EOI, 0);
+}
+
+static void amd64_wait_pit(void)
+{
+	//10ms
+	uint16_t count = 11932;
+	outb(0x61, (inb(0x61) & ~0x02) & ~0x01);
+	outb(0x43, 0xB0);
+	outb(0x42, count & 0xFF);
+	outb(0x42, count>>8);
+	outb(0x61, inb(0x61) | 0x01);
+	while (!(inb(0x61) & 0x20));
 }
 
 bool amd64_check_apic(bool *has_x2apic)
@@ -123,4 +142,38 @@ int amd64_init_intctlr(void)
 	early_puts("\n");
 
 	return 0;
+}
+
+void amd64_init_timer_lapic(uint32_t hertz)
+{
+	//
+	// Enable spurious
+	//
+
+	amd64_write_x2apic(LAPIC_SVR, (1<<8) | VEC_SPURIOUS);
+
+	//
+	// Calibrate timer
+	//
+
+	amd64_write_x2apic(LAPIC_TMR_DIV, 0x03);
+	amd64_write_x2apic(LAPIC_LVT_TMR, (1<<16) | VEC_TIMER);
+	amd64_write_x2apic(LAPIC_TMR_INIT, 0xFFFFFFFF);
+	amd64_wait_pit();
+	uint32_t cur = (uint32_t)amd64_read_x2apic(LAPIC_TMR_CUR);
+	amd64_write_x2apic(LAPIC_TMR_INIT, 0);
+
+	g_lapic_ticks_per_ms = (0xFFFFFFFFu - cur) / 10;
+
+	early_puts("boot: lapic ticks per ms = ");
+	early_puthex(g_lapic_ticks_per_ms);
+	early_puts("\n");
+
+	//
+	// Set to periodic mode
+	//
+
+	amd64_write_x2apic(LAPIC_LVT_TMR, (1<<17) | VEC_TIMER);
+	amd64_write_x2apic(LAPIC_TMR_DIV, 0x03);
+	amd64_write_x2apic(LAPIC_TMR_INIT, (g_lapic_ticks_per_ms*1000)/hertz);
 }
