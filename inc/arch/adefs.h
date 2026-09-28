@@ -46,5 +46,6 @@ neev_init (
 
 void early_putc(char c);
 void early_puts(const char *s);
+void early_puthex(uint64_t v);
 
 #endif

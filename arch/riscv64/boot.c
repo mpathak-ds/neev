@@ -104,6 +104,14 @@ void early_putc(char c)
 	putchar(c);
 }
 
+void early_puthex(uint64_t v)
+{
+	const char *d = "0123456789abcdef";
+	early_puts("0x");
+	for (int i = 60; i >= 0; i -= 4)
+		early_putc(d[(v >> i) & 0xf]);
+}
+
 void timer_irq_handler(void)
 {
 	early_putc('.');

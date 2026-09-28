@@ -84,7 +84,7 @@ void early_puts(const char *s)
 	}
 }
 
-static void early_puthex(uint64_t v)
+void early_puthex(uint64_t v)
 {
 	const char *d = "0123456789abcdef";
 	early_puts("0x");
@@ -115,6 +115,8 @@ void amd_main(void)
 
 	serial_init(115200);
 	early_puts("NEEV Booting...\n\n");
+
+	amd64_init_gdt();
 
 	early_puts("boot: Probing system memory\n");
 
@@ -158,6 +160,8 @@ void amd_main(void)
 	}
 
 	early_puts("boot: Loading kernel\n");
+
+	amd64_init_idt();
 
 	binfo.fw_total_ram = mem_size;
 	binfo.fw_ram_base = mem_base;

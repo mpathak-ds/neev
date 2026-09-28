@@ -11,6 +11,8 @@ ifeq ($(ARCH),amd64)
 	CC          := x86_64-elf-gcc
 	LD          := x86_64-elf-ld
 	QEMU        := qemu-system-x86_64
+	NASM		:= nasm
+	NASMFLAGS	:= -f elf64 -g -F dwarf -Wall
 
 	CFLAGS      := -Wall -Wextra -I./inc -I./inc/arch/ -ffreestanding \
 				   -fno-stack-protector -fno-stack-check -fno-omit-frame-pointer \
@@ -35,12 +37,14 @@ else
 	$(error Unsupported architecture: $(ARCH))
 endif
 
-ARCH_C_SRCS   := $(wildcard $(ARCH_FOLDER)/*.c)
-ARCH_ASM_SRCS := $(wildcard $(ARCH_FOLDER)/*.s) $(wildcard $(ARCH_FOLDER)/*.S)
+ARCH_C_SRCS		:= $(wildcard $(ARCH_FOLDER)/*.c)
+ARCH_ASM_SRCS	:= $(wildcard $(ARCH_FOLDER)/*.s) $(wildcard $(ARCH_FOLDER)/*.S)
+ARCH_NASM_SRCS	:= $(wildcard $(ARCH_FOLDER)/*.asm)
 
-ARCH_OBJS     := $(patsubst $(ARCH_FOLDER)/%.c, $(OUTPUT_FOLDER)/%.o, $(ARCH_C_SRCS)) \
-				 $(patsubst $(ARCH_FOLDER)/%.s, $(OUTPUT_FOLDER)/%.o, \
-				 $(patsubst $(ARCH_FOLDER)/%.S, $(OUTPUT_FOLDER)/%.o, $(ARCH_ASM_SRCS)))
+ARCH_OBJS := $(patsubst $(ARCH_FOLDER)/%.c, $(OUTPUT_FOLDER)/%.o, $(ARCH_C_SRCS)) \
+			$(patsubst $(ARCH_FOLDER)/%.s, $(OUTPUT_FOLDER)/%.o, \
+			$(patsubst $(ARCH_FOLDER)/%.S, $(OUTPUT_FOLDER)/%.o, $(ARCH_ASM_SRCS))) \
+			$(patsubst $(ARCH_FOLDER)/%.asm, $(OUTPUT_FOLDER)/%.asm.o, $(ARCH_NASM_SRCS))
 
 .PHONY: all iso run clean
 
@@ -60,6 +64,9 @@ $(OUTPUT_FOLDER)/%.o: $(ARCH_FOLDER)/%.s | $(OUTPUT_FOLDER)
 
 $(OUTPUT_FOLDER)/%.o: $(ARCH_FOLDER)/%.S | $(OUTPUT_FOLDER)
 	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OUTPUT_FOLDER)/%.asm.o: $(ARCH_FOLDER)/%.asm | $(OUTPUT_FOLDER)
+	$(NASM) $(NASMFLAGS) $< -o $@
 
 $(OUTPUT_FOLDER)/init.o: oskrn/kern/startup.c | $(OUTPUT_FOLDER)
 	$(CC) $(CFLAGS) -c $< -o $@
