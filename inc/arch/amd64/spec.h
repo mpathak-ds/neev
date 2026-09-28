@@ -4,6 +4,9 @@
 #include <stdint.h>
 
 #define COM1 0x3F8
+#define IA32_APIC_BASE_MSR 0x1B
+#define IA32_APIC_BASE_MSR_BSP 0x100
+#define IA32_APIC_BASE_MSR_ENABLE 0x800
 
 typedef struct
 {
@@ -46,7 +49,21 @@ static inline uint8_t inb(uint16_t port) {
     return v;
 }
 
+static inline uint64_t rdmsr(uint32_t msr) {
+	uint32_t low, high;
+	asm volatile ("rdmsr" : "=a"(low), "=d"(high) : "c"(msr));
+	return ((uint64_t)high<<32) | low;
+}
+
+static inline void wrmsr(uint32_t msr, uint64_t val) {
+	uint32_t low = (uint32_t)val;
+	uint32_t high = (uint32_t)(val>>32);
+	asm volatile ("wrmsr" :: "a"(low), "d"(high), "c"(msr));
+}
+
 void amd64_init_gdt(void);
 void amd64_init_idt(void);
+
+int amd64_init_intctlr(void);
 
 #endif

@@ -23,6 +23,7 @@
 #include <amd64/limine.h>
 #include <amd64/spec.h>
 #include <adefs.h>
+#include <osdef.h>
 
 __attribute__((used, section(".limine_requests")))
 static volatile uint64_t base_revision[] = LIMINE_BASE_REVISION(6);
@@ -99,6 +100,12 @@ clock_init (
 	)
 {
 	serial_init(ser_baud);
+
+	int apic = amd64_init_intctlr();
+
+	if (apic < 0) {
+		return STATUS_FAILED_DEVICE_INIT;
+	}
 
 	return 0;
 }

@@ -23,7 +23,7 @@ ifeq ($(ARCH),amd64)
 				   -m elf_x86_64 -z max-page-size=0x1000
 	
 	# QEMU boots the generated ISO image with serial monitoring
-	QEMU_FLAGS  := -cdrom $(ISO_IMAGE) -serial mon:stdio -m 512M
+	QEMU_FLAGS  := -cdrom $(ISO_IMAGE) -serial mon:stdio -enable-kvm -cpu host,x2apic -m 512M
 else ifeq ($(ARCH),riscv64)
 	TARGET := $(OUTPUT_FOLDER)/os.elf
 	ARCH_FOLDER := arch/riscv64

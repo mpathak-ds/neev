@@ -41,12 +41,24 @@ neev_init (
 */
 	
 {
+	uint32_t status = 0;
+
 	(void)boot_info;
 
 	early_puts("\nDriftless Neev Kernel Version 1.0.0.001\n");
 
-	early_puts("init: Initializing peripherals\n");
-	clock_init(115200, 10000000);
+	early_puts("init: Initializing peripherals\n");	
+	status = clock_init(115200, 10000000);
+
+	if (status) {
+
+		//
+		// Need to replace with proper panic later!
+		//
+	
+		early_puts("init: Failed early initialization\n");
+		while(1);
+	}
 	
 	while(1);
 }

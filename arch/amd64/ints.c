@@ -88,7 +88,7 @@ void amd64_set_desc(uint8_t vec, void *isr, uint8_t flags)
 void amd64_init_idt(void)
 {
 	g_idtr.base = (uintptr_t)&g_idt[0];
-	g_idtr.lim = (uint16_t)sizeof(idt_entry) * 255;
+	g_idtr.lim = (uint16_t)sizeof(idt_entry) * 256 - 1;
 
 	for (uint8_t vec=0; vec<32; vec++) {
 		amd64_set_desc(vec, isr_stub_table[vec], 0x8E);
@@ -96,5 +96,13 @@ void amd64_init_idt(void)
 	}
 
 	asm volatile ("lidt %0" : : "m"(g_idtr));
+
+	//
+	// Disable and remap before enabling ints
+	//
+
+	outb(0x21, 0xFF);
+	outb(0xA1, 0xFF);
+	
 	asm volatile ("sti");
 }
