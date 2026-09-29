@@ -239,6 +239,8 @@ void virt_startup(uint32_t hart_id, void *dtb)
 	binfo.fw_core_num = hart_id;
 	binfo.fw_ser_base = con;
 	binfo.fw_ser_ops = &ser_ops;
+	binfo.fw_is_video = 0;
+	binfo.fw_vid_info = 0;
 
 	early_puts("boot: Loading kernel\n");
 	neev_init(&binfo);

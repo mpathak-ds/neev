@@ -21,6 +21,7 @@
 #define ARCH_SPEC_DEF_H
 
 #include <stdint.h>
+#include <console/video.h>
 #include <console/serial.h>
 
 //#define FW_CONFIG_IS_MCU
@@ -31,8 +32,11 @@ typedef struct _firmware_info
 	uint64_t fw_total_ram;
 	uint64_t fw_ram_base;
 	uint32_t fw_core_num;
+	
 	uint64_t fw_ser_base;
 	struct console_ops *fw_ser_ops;
+	uint8_t fw_is_video;
+	struct video_console *fw_vid_info;
 } firmware_info_t, *pfirmware_info_t;
 
 uint32_t

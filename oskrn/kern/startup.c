@@ -66,9 +66,17 @@ neev_init (
 	// Initialize console for debugging
 	//
 
-	console_init(boot_info->fw_ser_base, boot_info->fw_ser_ops);
+	status = kd_init(boot_info, 1);
 
-	console_puts("init: Console initialized\n");
+	if (status != STATUS_SUCCESS) {
+
+		//
+		// Need to replace with proper panic later!
+		//
 	
+		early_puts("init: Failed early initialization\n");
+		while(1);
+	}
+
 	while(1);
 }

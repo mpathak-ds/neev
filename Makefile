@@ -53,8 +53,8 @@ all: $(TARGET)
 run: all
 	$(QEMU) $(QEMU_FLAGS)
 
-$(OUTPUT_FOLDER)/os.elf: $(ARCH_OBJS) $(OUTPUT_FOLDER)/init.o $(OUTPUT_FOLDER)/sercon.o $(OUTPUT_FOLDER)/vidcon.o | $(OUTPUT_FOLDER)
-	$(LD) $(LDFLAGS) $(ARCH_OBJS) $(OUTPUT_FOLDER)/init.o $(OUTPUT_FOLDER)/sercon.o $(OUTPUT_FOLDER)/vidcon.o -o $@
+$(OUTPUT_FOLDER)/os.elf: $(ARCH_OBJS) $(OUTPUT_FOLDER)/init.o $(OUTPUT_FOLDER)/sercon.o $(OUTPUT_FOLDER)/vidcon.o $(OUTPUT_FOLDER)/gencon.o | $(OUTPUT_FOLDER)
+	$(LD) $(LDFLAGS) $(ARCH_OBJS) $(OUTPUT_FOLDER)/init.o $(OUTPUT_FOLDER)/sercon.o $(OUTPUT_FOLDER)/vidcon.o $(OUTPUT_FOLDER)/gencon.o -o $@
 
 $(OUTPUT_FOLDER)/%.o: $(ARCH_FOLDER)/%.c | $(OUTPUT_FOLDER)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -75,6 +75,9 @@ $(OUTPUT_FOLDER)/sercon.o: oskrn/console/serial_console.c | $(OUTPUT_FOLDER)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OUTPUT_FOLDER)/vidcon.o: oskrn/console/video_console.c | $(OUTPUT_FOLDER)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OUTPUT_FOLDER)/gencon.o: oskrn/console/console_general.c | $(OUTPUT_FOLDER)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OUTPUT_FOLDER):
