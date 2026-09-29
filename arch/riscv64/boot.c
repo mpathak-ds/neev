@@ -21,6 +21,8 @@
 #include <stddef.h>
 #include <riscv64/sbi.h>
 #include <adefs.h>
+#include <console/serial.h>
+#include <osdef.h>
 
 extern char __bss[], __bss_end[], __stack_top[];
 static uint32_t g_timer_rate;
@@ -186,7 +188,7 @@ clock_init (
 	w_sie(SIE_STIE);
 	w_sstatus(r_sstatus() | SSTATUS_SIE);
 
-	return 0;
+	return STATUS_SUCCESS;
 }
 
 void virt_startup(uint32_t hart_id, void *dtb)
@@ -195,6 +197,7 @@ void virt_startup(uint32_t hart_id, void *dtb)
 
 	firmware_info_t binfo;
 	struct dtb_info info;
+	struct console_ops ser_ops;
 
 	early_puts("NEEV Booting...\nBoard: QEMU Virt (RV64)\n\n");
 
@@ -228,10 +231,14 @@ void virt_startup(uint32_t hart_id, void *dtb)
 		}
 	}
 
+	ser_ops.putc = early_putc;
+	ser_ops.getc = 0;
+
 	binfo.fw_total_ram = mem_size;
 	binfo.fw_ram_base = mem_base;
 	binfo.fw_core_num = hart_id;
 	binfo.fw_ser_base = con;
+	binfo.fw_ser_ops = &ser_ops;
 
 	early_puts("boot: Loading kernel\n");
 	neev_init(&binfo);

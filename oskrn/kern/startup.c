@@ -14,7 +14,9 @@
  */
 
 #include <stdint.h>
+#include <console/serial.h>
 #include <adefs.h>
+#include <osdef.h>
 
 void
 neev_init (
@@ -50,7 +52,7 @@ neev_init (
 	early_puts("init: Initializing peripherals\n");	
 	status = clock_init(115200, 1);
 
-	if (status) {
+	if (status != STATUS_SUCCESS) {
 
 		//
 		// Need to replace with proper panic later!
@@ -59,6 +61,14 @@ neev_init (
 		early_puts("init: Failed early initialization\n");
 		while(1);
 	}
+
+	//
+	// Initialize console for debugging
+	//
+
+	console_init(boot_info->fw_ser_base, boot_info->fw_ser_ops);
+
+	console_puts("init: Console initialized\n");
 	
 	while(1);
 }

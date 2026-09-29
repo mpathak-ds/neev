@@ -110,7 +110,7 @@ clock_init (
 	early_puts("boot: setting timer\n");
 	amd64_init_timer_lapic(timer_rate);
 
-	return 0;
+	return STATUS_SUCCESS;
 }
 
 void amd_main(void)
@@ -122,6 +122,7 @@ void amd_main(void)
 	firmware_info_t binfo;
 	uint64_t mem_size = 0;
 	uint64_t mem_base = 0x0;
+	struct console_ops serial_ops;
 
 	serial_init(115200);
 	early_puts("NEEV Booting...\n\n");
@@ -173,10 +174,14 @@ void amd_main(void)
 
 	amd64_init_idt();
 
+	serial_ops.putc = serial_putc;
+	serial_ops.getc = NULL;
+
 	binfo.fw_total_ram = mem_size;
 	binfo.fw_ram_base = mem_base;
 	binfo.fw_core_num = mp_request.response->bsp_lapic_id;
 	binfo.fw_ser_base = COM1;
+	binfo.fw_ser_ops = &serial_ops;
 	
 	neev_init(&binfo);
 
