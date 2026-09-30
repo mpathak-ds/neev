@@ -68,6 +68,16 @@ void hcf()
 	}
 }
 
+void arch_disable_interrupts(void)
+{
+	asm("cli");
+}
+
+void arch_spin_forever(void)
+{
+	hcf();
+}
+
 void serial_init(uint32_t baud)
 {
 	uint16_t div = 115200 / baud;

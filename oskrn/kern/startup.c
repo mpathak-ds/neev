@@ -55,11 +55,7 @@ neev_init (
 	status = clock_init(115200, 1);
 
 	if (status != STATUS_SUCCESS) {
-
-		//
-		// Need to replace with proper panic later!
-		//
-	
+		// cant use kernel panic here.. console is still not initialized
 		early_puts("init: Failed early initialization\n");
 		while(1);
 	}
@@ -71,11 +67,6 @@ neev_init (
 	status = kd_init(boot_info, KD_VERBOSE_MODE);
 
 	if (status != STATUS_SUCCESS) {
-
-		//
-		// Need to replace with proper panic later!
-		//
-	
 		early_puts("init: Failed early initialization\n");
 		while(1);
 	}

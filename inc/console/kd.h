@@ -39,5 +39,13 @@ kvprintf (
 	const char *fmt,
 	va_list ap
 	);
+
+void
+kpanic (
+	panic_code cause,
+	uintptr_t params,
+	const char *fmt,
+	...
+	);
 	
 #endif

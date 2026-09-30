@@ -114,6 +114,18 @@ void early_puthex(uint64_t v)
 		early_putc(d[(v >> i) & 0xf]);
 }
 
+void arch_disable_interrupts(void)
+{
+	__asm__ __volatile__("csrc sstatus, %0" : : "r"(1 << 1));
+}
+
+void arch_spin_forever(void)
+{
+	for (;;) {
+		__asm__ __volatile__("wfi");
+	}
+}
+
 void timer_irq_handler(void)
 {
 	early_putc('.');

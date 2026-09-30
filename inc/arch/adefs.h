@@ -54,4 +54,7 @@ void early_putc(char c);
 void early_puts(const char *s);
 void early_puthex(uint64_t v);
 
+void arch_disable_interrupts(void);
+void arch_spin_forever(void);
+
 #endif
