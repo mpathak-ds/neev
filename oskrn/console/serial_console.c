@@ -56,6 +56,7 @@ console_putc (
 {
 	if (!g_console.ops.putc) return;
 
+	// add return aswell
 	if (c == '\n') {
 		g_console.ops.putc('\r');
 	}

@@ -21,6 +21,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <amd64/spec.h>
+#include <console/kd.h>
 #include <adefs.h>
 
 __attribute__((aligned(0x10)))
@@ -44,8 +45,12 @@ void amd64_ehandler(struct int_frame *f)
 	
 	if (f->vec == 0x20) {
 		g_ticks++;
-		
-		early_puts(".");
+
+		if (!kd_is_online()) {
+			early_puts(".");
+		} else {
+			kputs(".");
+		}
 		
 		amd64_eoi_lapic();
 		return;

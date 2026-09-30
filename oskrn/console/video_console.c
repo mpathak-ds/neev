@@ -23,6 +23,7 @@
 
 struct video_console g_video;
 
+// vga palette
 static const uint32_t video_vga_rgb[16] = {
 	0x000000, 0x0000AA, 0x00AA00, 0x00AAAA,
 	0xAA0000, 0xAA00AA, 0xAA5500, 0xAAAAAA,
@@ -84,6 +85,7 @@ video_fill_row (
 	uint8_t attr
 	)
 {
+	// iterate over all cells of said row and fill with a blank of said attr
 	for (uint32_t c=0; c<video_cols; c++) {
 		video_cells[row][c].ch = ' ';
 		video_cells[row][c].attr = attr;
@@ -239,10 +241,12 @@ video_console_init (
 
 	video_info->clear_screen(VIDEO_COLOR_WHITE);
 
+	// display boot logo
 	video_console_display_boot(video_info);
 
 	g_video = *video_info;
 
+	// setup video console and check for invalid param
 	video_cols = g_video.resolution_width / VIDEO_FONT_W;
 	video_rows = g_video.resolution_height / VIDEO_FONT_H;
 	if (video_cols > VIDEO_MAX_COLS) video_cols = VIDEO_MAX_COLS;

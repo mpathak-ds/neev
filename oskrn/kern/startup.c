@@ -18,6 +18,8 @@
 #include <adefs.h>
 #include <osdef.h>
 
+#define KD_VERBOSE_MODE 1
+
 void
 neev_init (
 	pfirmware_info_t boot_info
@@ -66,7 +68,7 @@ neev_init (
 	// Initialize console for debugging
 	//
 
-	status = kd_init(boot_info, 1);
+	status = kd_init(boot_info, KD_VERBOSE_MODE);
 
 	if (status != STATUS_SUCCESS) {
 
@@ -77,6 +79,13 @@ neev_init (
 		early_puts("init: Failed early initialization\n");
 		while(1);
 	}
+
+	//
+	// Temporary kprintf test
+	//
+	
+	kprintf("\ninit: Total %uMB of memory (0x%x - 0x%x), running on core %d, %s", boot_info->fw_total_ram / 1048576, boot_info->fw_ram_base,
+	boot_info->fw_ram_base+boot_info->fw_total_ram, boot_info->fw_core_num, boot_info->fw_is_video ? "video available" : "no video");
 
 	while(1);
 }
