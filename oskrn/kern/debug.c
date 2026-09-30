@@ -90,10 +90,10 @@ panic (
 {
 	char buffer[100];
 
-	kprintf("\n!!! panic !!!\n", 0);
+	kprintf("\n!!! panic !!!\n");
 	kprintf(fmt);
 	panic_cause_name(cause, buffer);
-	kprintf("\n\nmachine information:\n%s (0x%x)\nparams: 0x%x (if a debugger is connected, inspect this address for information)\n",
+	kprintf("\n\nmachine information:\n%s (0x%x)\nparams: 0x%lx (if a debugger is connected, inspect this address for information)\n",
 	buffer, cause, params);
 
 	// TODO: display reg info

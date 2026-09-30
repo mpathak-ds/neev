@@ -17,6 +17,7 @@
 #include <console/serial.h>
 #include <adefs.h>
 #include <osdef.h>
+#include <console/kd.h>
 
 #define KD_VERBOSE_MODE 1
 
@@ -75,7 +76,7 @@ neev_init (
 	// Temporary kprintf test
 	//
 	
-	kprintf("\ninit: Total %uMB of memory (0x%x - 0x%x), running on core %d, %s", boot_info->fw_total_ram / 1048576, boot_info->fw_ram_base,
+	kprintf("\ninit: Total %luMB of memory (0x%lx - 0x%lx), running on core %d, %s", boot_info->fw_total_ram / 1048576, boot_info->fw_ram_base,
 	boot_info->fw_ram_base+boot_info->fw_total_ram, boot_info->fw_core_num, boot_info->fw_is_video ? "video available" : "no video");
 
 	while(1);
