@@ -61,23 +61,6 @@ static volatile uint64_t requests_end_marker[2] = LIMINE_REQUESTS_END_MARKER;
 
 static struct limine_framebuffer *g_framebuffer;
 
-void hcf()
-{
-	for (;;) {
-		asm("hlt");
-	}
-}
-
-void arch_disable_interrupts(void)
-{
-	asm("cli");
-}
-
-void arch_spin_forever(void)
-{
-	hcf();
-}
-
 void serial_init(uint32_t baud)
 {
 	uint16_t div = 115200 / baud;

@@ -27,6 +27,8 @@
 extern char __bss[], __bss_end[], __stack_top[];
 static uint32_t g_timer_rate;
 
+extern void trap_entry(void);
+
 struct sbiret sbi_call(long arg0, long arg1, long arg2, long arg3, long arg4, long arg5, long fid, long eid)
 {
 	register long a0 __asm__("a0") = arg0;
@@ -114,61 +116,11 @@ void early_puthex(uint64_t v)
 		early_putc(d[(v >> i) & 0xf]);
 }
 
-void arch_disable_interrupts(void)
-{
-	__asm__ __volatile__("csrc sstatus, %0" : : "r"(1 << 1));
-}
-
-void arch_spin_forever(void)
-{
-	for (;;) {
-		__asm__ __volatile__("wfi");
-	}
-}
-
 void timer_irq_handler(void)
 {
 	early_putc('.');
 
 	sbi_set_timer(r_time() + g_timer_rate);
-}
-
-__attribute__((naked))
-__attribute__((aligned(4)))
-void trap_entry(void)
-{
-	__asm__ __volatile__(
-		"addi sp, sp, -256\n"
-		"sd ra,  0(sp)\n"
-		"sd t0,  8(sp)\n"
-		"sd t1, 16(sp)\n"
-		"sd t2, 24(sp)\n"
-		"sd a0, 32(sp)\n"
-		"sd a1, 40(sp)\n"
-		"sd a2, 48(sp)\n"
-		"sd a3, 56(sp)\n"
-		"sd a4, 64(sp)\n"
-		"sd a5, 72(sp)\n"
-		"sd a6, 80(sp)\n"
-		"sd a7, 88(sp)\n"
-
-		"call trap_dispatch\n"
-
-		"ld ra,  0(sp)\n"
-		"ld t0,  8(sp)\n"
-		"ld t1, 16(sp)\n"
-		"ld t2, 24(sp)\n"
-		"ld a0, 32(sp)\n"
-		"ld a1, 40(sp)\n"
-		"ld a2, 48(sp)\n"
-		"ld a3, 56(sp)\n"
-		"ld a4, 64(sp)\n"
-		"ld a5, 72(sp)\n"
-		"ld a6, 80(sp)\n"
-		"ld a7, 88(sp)\n"
-		"addi sp, sp, 256\n"
-		"sret\n"
-	);
 }
 
 void trap_dispatch(void)

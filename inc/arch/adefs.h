@@ -56,5 +56,9 @@ void early_puthex(uint64_t v);
 
 void arch_disable_interrupts(void);
 void arch_spin_forever(void);
+void arch_atomic_lock_up(void);
+void arch_atomic_free_up(void);
+void arch_atomic_lock_mp(uint32_t *lock_ptr);
+void arch_atomic_free_mp(uint32_t *lock_ptr);
 
 #endif

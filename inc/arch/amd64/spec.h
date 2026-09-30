@@ -71,11 +71,18 @@ static inline void wrmsr(uint32_t msr, uint64_t val) {
 	asm volatile ("wrmsr" :: "a"(low), "d"(high), "c"(msr));
 }
 
+void hcf();
+
 void amd64_init_gdt(void);
 void amd64_init_idt(void);
 
 int amd64_init_intctlr(void);
 void amd64_init_timer_lapic(uint32_t hertz);
 void amd64_eoi_lapic(void);
+
+extern void amd64_save_and_disable_int(void);
+extern void amd64_restore_and_enable_int(void);
+extern void amd64_atomic_lock(uint32_t *lock_ptr);
+extern void amd64_atomic_release(uint32_t *lock_ptr);
 
 #endif
