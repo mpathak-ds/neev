@@ -7,6 +7,11 @@
 typedef uint32_t spinlock_t;
 
 void
+spinlock_init (
+	spinlock_t *lock
+	);
+
+void
 spinlock_acquire (
 	spinlock_t *lock
 	);

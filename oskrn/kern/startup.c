@@ -78,12 +78,21 @@ neev_init (
 	//
 	// Initialize memory managers
 	//
+
+	uint64_t ram_end = boot_info->fw_ram_base + boot_info->fw_total_ram;
+	uint64_t ram_start = boot_info->fw_ram_base + boot_info->fw_usable_ram_offset;
 	
 	kprintf("\ninit: Total %luMB of memory (0x%lx - 0x%lx), running on core %d, %s", boot_info->fw_total_ram / 1048576, boot_info->fw_ram_base,
 	boot_info->fw_ram_base+boot_info->fw_total_ram, boot_info->fw_core_num, boot_info->fw_is_video ? "video available" : "no video");
 
 	kprintf("\ninit: Initializing boot allocator\n");
-	balloc_init(boot_info->fw_ram_base+boot_info->fw_usable_ram_offset, boot_info->fw_ram_base+boot_info->fw_total_ram);
+	balloc_init(ram_start, ram_end-ram_start);
+
+	kprintf("init: Initializing frame allocator\n");
+	uint64_t boot_end = falloc_init(ram_end, boot_info->fw_virt_offset);
+
+	// mark all of ram free
+	falloc_mark_free(boot_end, ram_end-boot_end);
 
 	//
 	// Test if enabled

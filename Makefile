@@ -55,10 +55,10 @@ run: all
 
 $(OUTPUT_FOLDER)/os.elf: $(ARCH_OBJS) $(OUTPUT_FOLDER)/init.o $(OUTPUT_FOLDER)/sercon.o $(OUTPUT_FOLDER)/vidcon.o \
 $(OUTPUT_FOLDER)/gencon.o $(OUTPUT_FOLDER)/kdebug.o $(OUTPUT_FOLDER)/libstr.o $(OUTPUT_FOLDER)/balloc.o $(OUTPUT_FOLDER)/vmtest.o \
-$(OUTPUT_FOLDER)/alltest.o | $(OUTPUT_FOLDER)
+$(OUTPUT_FOLDER)/alltest.o $(OUTPUT_FOLDER)/vpmm.o $(OUTPUT_FOLDER)/slock.o | $(OUTPUT_FOLDER)
 	$(LD) $(LDFLAGS) $(ARCH_OBJS) $(OUTPUT_FOLDER)/init.o $(OUTPUT_FOLDER)/sercon.o $(OUTPUT_FOLDER)/vidcon.o \
 	$(OUTPUT_FOLDER)/gencon.o $(OUTPUT_FOLDER)/kdebug.o $(OUTPUT_FOLDER)/libstr.o $(OUTPUT_FOLDER)/balloc.o $(OUTPUT_FOLDER)/vmtest.o \
-	$(OUTPUT_FOLDER)/alltest.o -o $@
+	$(OUTPUT_FOLDER)/alltest.o $(OUTPUT_FOLDER)/vpmm.o $(OUTPUT_FOLDER)/slock.o -o $@
 
 $(OUTPUT_FOLDER)/%.o: $(ARCH_FOLDER)/%.c | $(OUTPUT_FOLDER)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -93,7 +93,13 @@ $(OUTPUT_FOLDER)/kdebug.o: oskrn/kern/debug.c | $(OUTPUT_FOLDER)
 $(OUTPUT_FOLDER)/balloc.o: oskrn/vm/boot_alloc.c | $(OUTPUT_FOLDER)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(OUTPUT_FOLDER)/vpmm.o: oskrn/vm/pmm.c | $(OUTPUT_FOLDER)
+	$(CC) $(CFLAGS) -c $< -o $@
+
 $(OUTPUT_FOLDER)/vmtest.o: tests/vm.c | $(OUTPUT_FOLDER)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OUTPUT_FOLDER)/slock.o: oskrn/kern/spinlock.c | $(OUTPUT_FOLDER)
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(OUTPUT_FOLDER)/alltest.o: tests/all.c | $(OUTPUT_FOLDER)

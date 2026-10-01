@@ -23,8 +23,9 @@
 // Extremely simple allocator to get things going
 //
 
-uint64_t cur = 0;
-uint64_t end = 0;
+uint64_t g_cur = 0;
+uint64_t g_end = 0;
+uint8_t g_is_frozen = 0;
 
 void
 balloc_init (
@@ -33,8 +34,11 @@ balloc_init (
 	)
 {
 	// align to boundary
-	cur = ALIGN_UP(base, VM_FRAME_SIZE);
-	end = base+size;
+	g_cur = ALIGN_UP(base, VM_FRAME_SIZE);
+	g_end = base+size;
+
+	// unfreeze
+	g_is_frozen = 0;
 }
 
 uint64_t
@@ -42,9 +46,22 @@ balloc (
 	size_t bytes
 	)
 {
-	uint64_t addr = ALIGN_UP(cur, VM_FRAME_SIZE);
-	if (addr+bytes > end) panic(PANIC_OUT_OF_BALLOC, 0x00, "boot allocator out of memory for %lu bytes (addr=0x%lx, end=0x%lx)", bytes, addr, end);
-	cur = addr+bytes;
+	// cant operate while frozen
+	if (g_is_frozen) panic(PANIC_INVALID_CALL, 0x00, "attempted to use boot allocator after frozen for %lu bytes", bytes);
+
+	uint64_t addr = ALIGN_UP(g_cur, VM_FRAME_SIZE);
+	if (addr+bytes > g_end) panic(PANIC_OUT_OF_BALLOC, 0x00, "boot allocator out of memory for %lu bytes (addr=0x%lx, end=0x%lx)", bytes, addr, g_end);
+	g_cur = addr+bytes;
 	
 	return addr;
+}
+
+uint64_t
+balloc_freeze (
+	void
+	)
+{
+	g_is_frozen = 1;
+
+	return ALIGN_UP(g_cur, VM_FRAME_SIZE);
 }
