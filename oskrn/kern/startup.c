@@ -14,10 +14,13 @@
  */
 
 #include <stdint.h>
+#include <stddef.h>
 #include <console/serial.h>
 #include <adefs.h>
 #include <osdef.h>
 #include <console/kd.h>
+#include <vm/pm.h>
+#include <tests/all.h>
 
 #define KD_VERBOSE_MODE 1
 
@@ -73,11 +76,25 @@ neev_init (
 	}
 
 	//
-	// Temporary kprintf test
+	// Initialize memory managers
 	//
 	
 	kprintf("\ninit: Total %luMB of memory (0x%lx - 0x%lx), running on core %d, %s", boot_info->fw_total_ram / 1048576, boot_info->fw_ram_base,
 	boot_info->fw_ram_base+boot_info->fw_total_ram, boot_info->fw_core_num, boot_info->fw_is_video ? "video available" : "no video");
+
+	kprintf("\ninit: Initializing boot allocator\n");
+	balloc_init(boot_info->fw_ram_base+boot_info->fw_usable_ram_offset, boot_info->fw_ram_base+boot_info->fw_total_ram);
+
+	//
+	// Test if enabled
+	//
+
+	status = tests_do_all(boot_info);
+
+	if (status != STATUS_SUCCESS) {
+		// panic
+		panic(PANIC_FAILED_EARLY_INIT, boot_info, "failed test suite with status 0x%lx", status);
+	}
 
 	while(1);
 }

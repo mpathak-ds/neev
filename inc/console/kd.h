@@ -41,7 +41,7 @@ kvprintf (
 	);
 
 void
-kpanic (
+panic (
 	panic_code cause,
 	uintptr_t params,
 	const char *fmt,

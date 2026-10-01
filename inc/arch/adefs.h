@@ -32,6 +32,8 @@ typedef struct _firmware_info
 	uint64_t fw_total_ram;
 	uint64_t fw_ram_base;
 	uint32_t fw_core_num;
+	uint64_t fw_usable_ram_offset;
+	uint64_t fw_virt_offset;
 	
 	uint64_t fw_ser_base;
 	struct console_ops *fw_ser_ops;

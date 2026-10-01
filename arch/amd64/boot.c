@@ -263,6 +263,8 @@ void amd_main(void)
 
 	struct limine_memmap_response *mm = memmap_request.response;
 	uint64_t lowest = UINT64_MAX, highest = 0, usable = 0;
+	uint64_t usable_ram_offset = 0;
+	uint64_t max_usable_length = 0;
 	
 	for (uint64_t i = 0; i < mm->entry_count; i++) {
 		struct limine_memmap_entry *e = mm->entries[i];
@@ -270,7 +272,14 @@ void amd_main(void)
 		early_puthex(e->base); early_puts(" len ");
 		early_puthex(e->length); early_puts(" type ");
 		early_puthex(e->type); early_puts("\n");
-	
+
+		if (e->type == LIMINE_MEMMAP_USABLE) {
+			if (e->length > max_usable_length) {
+				max_usable_length = e->length;
+				usable_ram_offset = e->base;
+			}
+		}
+		
 		if (e->type == LIMINE_MEMMAP_USABLE ||
 		    e->type == LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE) {
 			if (e->base < lowest) lowest = e->base;
@@ -281,6 +290,11 @@ void amd_main(void)
 
 	mem_base = lowest;
 	mem_size = usable;
+
+	uint64_t hhdm_offset = 0;
+	if (hhdm_request.response != NULL) {
+		hhdm_offset = hhdm_request.response->offset;
+	}
 
 	//
 	// Find core id
@@ -324,6 +338,8 @@ void amd_main(void)
 	binfo.fw_total_ram = mem_size;
 	binfo.fw_ram_base = mem_base;
 	binfo.fw_core_num = mp_request.response->bsp_lapic_id;
+	binfo.fw_usable_ram_offset = usable_ram_offset;
+	binfo.fw_virt_offset = hhdm_offset;
 	binfo.fw_ser_base = COM1;
 	binfo.fw_ser_ops = &serial_ops;
 	binfo.fw_is_video = fb_found;

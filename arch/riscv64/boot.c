@@ -9,7 +9,7 @@
 
 	Description:
 
-		QEMU virt bootloader.
+		RISCV64 bootloader.
 
 	Author:
 
@@ -163,7 +163,7 @@ void virt_startup(uint32_t hart_id, void *dtb)
 	struct dtb_info info;
 	struct console_ops ser_ops;
 
-	early_puts("NEEV Booting...\nBoard: QEMU Virt (RV64)\n\n");
+	early_puts("NEEV Booting...\n\n");
 
 	early_puts("boot: Probing system memory\n");
 
@@ -201,6 +201,8 @@ void virt_startup(uint32_t hart_id, void *dtb)
 	binfo.fw_total_ram = mem_size;
 	binfo.fw_ram_base = mem_base;
 	binfo.fw_core_num = hart_id;
+	binfo.fw_usable_ram_offset = 0x400000;
+	binfo.fw_virt_offset = 0x0;
 	binfo.fw_ser_base = con;
 	binfo.fw_ser_ops = &ser_ops;
 	binfo.fw_is_video = 0;
