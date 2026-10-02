@@ -220,7 +220,7 @@ video_console_display_boot (
 			}
 
 			packed = boot_logo_pixels[i>>1];
-			video_info->put_pixel(x0+x, y0+y, (i&1) ? (packed&0x0F) : (packed>>4));
+			video_info->put_pixel(x0+x, y0+y, VIDEO_COLOR_LIGHT_MAGENTA); // original was (i&1) ? (packed&0x0F) : (packed>>4)
 		}
 	}
 }
