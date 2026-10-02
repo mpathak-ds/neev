@@ -22,10 +22,14 @@
 #include <riscv64/sbi.h>
 #include <adefs.h>
 #include <console/serial.h>
+#include <console/kd.h>
 #include <osdef.h>
+
+#define QEMU_RAMFB_DEV
 
 extern char __bss[], __bss_end[], __stack_top[];
 static uint32_t g_timer_rate;
+static fb_info *g_fb;
 
 extern void trap_entry(void);
 
@@ -77,6 +81,15 @@ static inline void w_stvec(uint64_t x)
 	__asm__ __volatile__("csrw stvec, %0" :: "r"(x));
 }
 
+void memcpy_(void *dest, void *src, uint64_t n)
+{
+	char *csrc = (char *)src;
+	char *cdest = (char *)dest;
+
+	for (int i=0; i<n; i++)
+		cdest[i] = csrc[i];
+}
+
 void putchar(char ch)
 {
 	sbi_call(ch, 0, 0, 0, 0, 0, 0, 1);
@@ -118,7 +131,11 @@ void early_puthex(uint64_t v)
 
 void timer_irq_handler(void)
 {
-	early_putc('.');
+	if (!kd_is_online()) {
+		early_putc('c');
+	} else {
+		kputs(".");
+	}
 
 	sbi_set_timer(r_time() + g_timer_rate);
 }
@@ -155,6 +172,128 @@ clock_init (
 	return STATUS_SUCCESS;
 }
 
+void ramfb_xrgb256_pixel(fb_info *fb, uint16_t x, uint16_t y, uint8_t pixel[4])
+{
+	memcpy_((void*)fb->fb_addr + ((y * fb->fb_stride) + (x * fb->fb_bpp)), pixel, 4);
+}
+
+int fb_init()
+{
+	return 0;
+}
+
+static uint8_t *fb_pixel(fb_info *fb, uint8_t red, uint8_t green, uint8_t blue)
+{
+	static uint8_t fbclr[4];
+
+	fbclr[0] = red;
+	fbclr[1] = green;
+	fbclr[2] = blue;
+	fbclr[3] = 0;
+
+	return fbclr;
+}
+
+static uint8_t *fb_clr_pixel(fb_info *fb, uint32_t color)
+{
+	uint8_t *result = fb_pixel(g_fb, 255, 255, 255);
+	
+	switch (color)
+	{
+		case VIDEO_COLOR_BLACK:
+			result = fb_pixel(fb, 0, 0, 0);
+			break;
+
+		case VIDEO_COLOR_BLUE:
+			result = fb_pixel(fb, 0, 0, 170);
+			break;
+
+		case VIDEO_COLOR_GREEN:
+			result = fb_pixel(fb, 0, 170, 0);
+			break;
+
+		case VIDEO_COLOR_CYAN:
+			result = fb_pixel(fb, 0, 170, 170);
+			break;
+
+		case VIDEO_COLOR_RED:
+			result = fb_pixel(fb, 170, 0, 0);
+			break;
+
+		case VIDEO_COLOR_MAGENTA:
+			result = fb_pixel(fb, 170, 0, 170);
+			break;
+
+		case VIDEO_COLOR_BROWN:
+			result = fb_pixel(fb, 170, 85, 0);
+			break;
+
+		case VIDEO_COLOR_LIGHT_GREY:
+			result = fb_pixel(fb, 170, 170, 170);
+			break;
+
+		case VIDEO_COLOR_DARK_GREY:
+			result = fb_pixel(fb, 85, 85, 85);
+			break;
+
+		case VIDEO_COLOR_LIGHT_BLUE:
+			result = fb_pixel(fb, 85, 85, 255);
+			break;
+
+		case VIDEO_COLOR_LIGHT_GREEN:
+			result = fb_pixel(fb, 85, 255, 85);
+			break;
+
+		case VIDEO_COLOR_LIGHT_CYAN:
+			result = fb_pixel(fb, 85, 255, 255);
+			break;
+
+		case VIDEO_COLOR_LIGHT_RED:
+			result = fb_pixel(fb, 255, 85, 85);
+			break;
+
+		case VIDEO_COLOR_LIGHT_MAGENTA:
+			result = fb_pixel(fb, 255, 85, 255);
+			break;
+
+		case VIDEO_COLOR_YELLOW:
+			result = fb_pixel(fb, 255, 255, 85);
+			break;
+
+		case VIDEO_COLOR_WHITE:
+			result = fb_pixel(fb, 255, 255, 255);
+			break;
+	
+		default:
+			break;
+	}
+
+	return result;
+}
+
+void fb_put_pixel(uint32_t x, uint32_t y, uint32_t color)
+{
+	uint8_t *p = fb_clr_pixel(g_fb, color);
+	ramfb_xrgb256_pixel(g_fb, x, y, p);
+}
+
+void fb_clrscr(uint32_t color)
+{
+	uint64_t active_row_bytes = g_fb->fb_width * g_fb->fb_bpp;
+	uint8_t *color_pixel = fb_clr_pixel(g_fb, color);
+
+    uint8_t row_buf[g_fb->fb_width * 4]; 
+    
+    for (uint32_t x = 0; x < g_fb->fb_width; x++) {
+        memcpy_(&row_buf[x * g_fb->fb_bpp], color_pixel, g_fb->fb_bpp);
+    }
+
+    for (uint32_t y = 0; y < g_fb->fb_height; y++) {
+        uint8_t *row_dest = (uint8_t *)g_fb->fb_addr + (y * g_fb->fb_stride);
+        memcpy_(row_dest, row_buf, active_row_bytes);
+    }
+}
+
 void virt_startup(uint32_t hart_id, void *dtb)
 {
 	memset(__bss, 0, (size_t) __bss_end - (size_t) __bss);
@@ -169,6 +308,8 @@ void virt_startup(uint32_t hart_id, void *dtb)
 
 	uint64_t mem_base;
 	uint64_t mem_size;
+	uint8_t video_found = 0;
+	struct video_console vid_info;
 
 	//
 	// Parse device tree
@@ -198,6 +339,29 @@ void virt_startup(uint32_t hart_id, void *dtb)
 	ser_ops.putc = early_putc;
 	ser_ops.getc = 0;
 
+	binfo.fw_vid_info = 0;
+
+#if defined(QEMU_RAMFB_DEV)
+	// check for ramfb
+	if (ramfb_check_fw_cfg_dma()) {
+		early_puts("boot: Video found\n");
+		video_found = 1;
+		g_fb = ramfb_init(480, 800);
+
+		vid_info.resolution_width = 480;
+		vid_info.resolution_height = 800;
+		vid_info.resolution_bpp = 4;
+
+		vid_info.initialize_screen = fb_init;
+		vid_info.put_pixel = fb_put_pixel;
+		vid_info.clear_screen = fb_clrscr;
+
+		binfo.fw_vid_info = &vid_info;
+	} else {
+		early_puts("boot: Video not found\n");
+	}
+#endif
+
 	binfo.fw_total_ram = mem_size;
 	binfo.fw_ram_base = mem_base;
 	binfo.fw_core_num = hart_id;
@@ -205,8 +369,7 @@ void virt_startup(uint32_t hart_id, void *dtb)
 	binfo.fw_virt_offset = 0x0;
 	binfo.fw_ser_base = con;
 	binfo.fw_ser_ops = &ser_ops;
-	binfo.fw_is_video = 0;
-	binfo.fw_vid_info = 0;
+	binfo.fw_is_video = video_found;
 
 	early_puts("boot: Loading kernel\n");
 	neev_init(&binfo);

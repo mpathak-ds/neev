@@ -21,6 +21,60 @@
 #define NF_UART (1u << 1)
 #define NF_STATUS_BAD (1u << 2)
 
+#define QEMU_CFG_FILE_DIR 0x19
+
+#define QEMU_CFG_DMA_CTL_ERROR 0x01
+#define QEMU_CFG_DMA_CTL_READ 0x02
+#define QEMU_CFG_DMA_CTL_SKIP 0x04
+#define QEMU_CFG_DMA_CTL_SELECT 0x08
+#define QEMU_CFG_DMA_CTL_WRITE 0x10
+
+#define BASE_ADDR 0x10100000
+#define BASE_ADDR_SELECTOR 0x10100008
+#define BASE_ADDR_DATA 0x10100000
+#define BASE_ADDR_ADDR 0x10100010
+
+#define fourcc_code(a, b, c, d) ((uint32_t)(a) | ((uint32_t)(b) << 8) | ((uint32_t)(c) << 16) | ((uint32_t)(d) << 24))
+
+#define DRM_FORMAT_XRGB8888 fourcc_code('X', 'R', '2', '4')
+
+union fw_cfg_sig_read {
+	uint32_t theInt;
+	char bytes[sizeof(int)];
+};
+
+typedef struct {
+	uint32_t control;
+	uint32_t length;
+	uint64_t address;
+} __attribute__((__packed__)) qemu_cfg_dma_access;
+
+struct __attribute__((__packed__)) qemu_ramfb_cfg {
+	uint64_t addr;
+	uint32_t fourcc;
+	uint32_t flags;
+	uint32_t width;
+	uint32_t height;
+	uint32_t stride;
+};
+
+struct qemu_cfg_file {
+	uint32_t size;
+	uint16_t select;
+	uint16_t reserved;
+	char name[56];
+};
+
+typedef struct {
+	uint64_t fb_addr;
+	uint32_t fb_width;
+	uint32_t fb_height;
+	uint32_t fb_bpp;
+
+	uint32_t fb_stride;
+	uint32_t fb_size;
+} fb_info;
+
 struct node_frame {
 	const char *name;
 	const uint8_t *reg;
@@ -82,5 +136,7 @@ struct sbiret {
 
 int dtb_get_memory(void *dtb, uint64_t *base_out, uint64_t *size_out);
 int dtb_parse(void *dtb, struct dtb_info *info);
+
+int qemu_cfg_find_file();
 
 #endif

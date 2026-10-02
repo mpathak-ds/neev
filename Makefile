@@ -32,7 +32,7 @@ else ifeq ($(ARCH),riscv64)
 	QEMU        := qemu-system-riscv64
 	CFLAGS      := -Wall -Wextra -I./inc -I./inc/arch/ -march=rv64gc -mabi=lp64d -mcmodel=medany -ffreestanding
 	LDFLAGS     := -T $(ARCH_FOLDER)/link.ld -nostdlib
-	QEMU_FLAGS  := -machine virt -bios default -kernel $(OUTPUT_FOLDER)/os.elf -serial mon:stdio -nographic
+	QEMU_FLAGS  := -machine virt -bios default -kernel $(OUTPUT_FOLDER)/os.elf -serial mon:stdio -device ramfb
 else
 	$(error Unsupported architecture: $(ARCH))
 endif
