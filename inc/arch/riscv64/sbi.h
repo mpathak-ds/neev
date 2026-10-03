@@ -134,6 +134,10 @@ struct sbiret {
 	long value;
 };
 
+typedef struct {
+	uint64_t raw;
+} page_table_t;
+
 int dtb_get_memory(void *dtb, uint64_t *base_out, uint64_t *size_out);
 int dtb_parse(void *dtb, struct dtb_info *info);
 

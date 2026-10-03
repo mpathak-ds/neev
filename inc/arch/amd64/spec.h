@@ -49,6 +49,10 @@ struct int_frame
 	uint64_t rip, cs, rflags, rsp, ss;	
 };
 
+typedef struct {
+	uint64_t raw;
+} page_table_t;
+
 static inline void outb(uint16_t port, uint8_t v) {
     asm volatile ("outb %0, %1" : : "a"(v), "Nd"(port));
 }

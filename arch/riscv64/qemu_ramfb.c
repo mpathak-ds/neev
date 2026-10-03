@@ -156,7 +156,7 @@ fb_info *ramfb_init(int w, int h)
 	static fb_info fb;
 
 	// todo to change this addr
-	fb.fb_addr = 0x80500000;
+	fb.fb_addr = 0x80400000;
     fb.fb_width = w;
     fb.fb_height = h;
     fb.fb_bpp = 4;

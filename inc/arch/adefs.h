@@ -62,5 +62,6 @@ void arch_atomic_lock_up(void);
 void arch_atomic_free_up(void);
 void arch_atomic_lock_mp(uint32_t *lock_ptr);
 void arch_atomic_free_mp(uint32_t *lock_ptr);
+void arch_init_mmu(pfirmware_info_t boot_info);
 
 #endif

@@ -105,5 +105,7 @@ neev_init (
 		panic(PANIC_FAILED_EARLY_INIT, boot_info, "failed test suite with status 0x%lx", status);
 	}
 
+	arch_init_mmu(boot_info);
+
 	while(1);
 }

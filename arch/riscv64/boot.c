@@ -365,7 +365,7 @@ void virt_startup(uint32_t hart_id, void *dtb)
 	binfo.fw_total_ram = mem_size;
 	binfo.fw_ram_base = mem_base;
 	binfo.fw_core_num = hart_id;
-	binfo.fw_usable_ram_offset = 0x400000;
+	binfo.fw_usable_ram_offset = 0x600000;
 	binfo.fw_virt_offset = 0x0;
 	binfo.fw_ser_base = con;
 	binfo.fw_ser_ops = &ser_ops;
